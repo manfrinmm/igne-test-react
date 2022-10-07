@@ -1,4 +1,6 @@
-import { InputHTMLAttributes } from "react";
+import { InputHTMLAttributes, useEffect, useRef } from "react";
+
+import { useField } from "@unform/core";
 import { overrideTailwindClasses } from "tailwind-override";
 
 interface IInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -14,6 +16,14 @@ export default function Input({
   className,
   ...rest
 }: IInputProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const { defaultValue, error, fieldName, registerField } = useField(name);
+
+  useEffect(() => {
+    registerField({ name: fieldName, ref: inputRef.current, path: "value" });
+  }, [registerField, fieldName]);
+
   return (
     <div
       className={overrideTailwindClasses(
@@ -25,8 +35,10 @@ export default function Input({
       </label>
 
       <input
-        id={name}
-        name={name}
+        id={fieldName}
+        name={fieldName}
+        ref={inputRef}
+        defaultValue={defaultValue}
         type="text"
         autoComplete="off"
         className={overrideTailwindClasses(
@@ -34,6 +46,8 @@ export default function Input({
         )}
         {...rest}
       />
+
+      {error && <span className="text-red-900 font-bold">{error}</span>}
     </div>
   );
 }
