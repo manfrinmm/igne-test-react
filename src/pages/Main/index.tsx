@@ -1,10 +1,17 @@
 import { ChangeEvent, useCallback, useRef, useState } from "react";
+import Lottie from "react-lottie";
+import { toast } from "react-toastify";
 
 import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { Scope, FormHandles } from "@unform/core";
 import { Form } from "@unform/web";
 
+import uploadAnimation from "../../assets/animation/upload.json";
 import Input from "../../components/forms/Input";
+import InputCurrency from "../../components/forms/Input/InputCurrency";
+import InputMask from "../../components/forms/Input/InputMask";
+import Modal from "../../components/Modal";
+import delay from "../../utils/delay";
 import readFileAsDataURL from "../../utils/readFileAsDataURL";
 import styles from "./styles.module.css";
 
@@ -28,6 +35,8 @@ export default function Main() {
     { id: 1 } as IProductData,
   ]);
   const [attachments, setAttachments] = useState<IAttachmentData[]>([]);
+
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   const formRef = useRef<FormHandles>(null);
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -63,7 +72,7 @@ export default function Main() {
       formRef.current?.setFieldValue("address.state", data.uf);
       formRef.current?.setFieldValue("address.city", data.localidade);
     } catch (error) {
-      alert("Falha ao carregar cep");
+      toast.error("Falha ao carregar cep");
     }
   }, []);
 
@@ -120,18 +129,20 @@ export default function Main() {
 
   const handleSubmit = useCallback(
     async (data: any) => {
-      console.log(data);
-
       if (data.products.length < 1) {
-        alert("Você deve adicionar ao menos um produto!");
+        toast.error("Você deve adicionar ao menos um produto!");
 
         return;
       }
 
       if (attachments.length < 1) {
-        alert("Você deve adicionar ao menos um anexo!");
+        toast.error("Você deve adicionar ao menos um anexo!");
+
         return;
       }
+
+      setModalIsOpen(true);
+      await delay();
 
       const dataFormatted = {
         razaoSocial: data.razao_social,
@@ -157,7 +168,18 @@ export default function Main() {
         })),
       };
 
-      console.log(dataFormatted);
+      setModalIsOpen(false);
+
+      const blob = new Blob([JSON.stringify(dataFormatted)], {
+        type: "application/json",
+      });
+
+      const link = document.createElement("a");
+
+      link.href = URL.createObjectURL(blob);
+      link.download = "data.json";
+
+      link.click();
     },
     [attachments],
   );
@@ -165,9 +187,14 @@ export default function Main() {
   return (
     <div className="App">
       <header className="flex justify-center">
-        <h1 className="text-center">Cadastro Cliente / Produto</h1>
+        <h1 className="text-center ml-auto">Cadastro Cliente / Produto</h1>
 
-        <button type="submit" id="submitButton" form="forms">
+        <button
+          type="submit"
+          id="submitButton"
+          form="forms"
+          className="ml-auto"
+        >
           Enviar
         </button>
       </header>
@@ -205,7 +232,7 @@ export default function Main() {
                   containerClass="col-span-2"
                   required
                 />
-                <Input label="CNPJ" name="cnpj" required />
+                <InputMask label="CNPJ" name="cnpj" maskType="cnpj" required />
 
                 <Input
                   label="Nome Fantasia"
@@ -221,9 +248,10 @@ export default function Main() {
                 />
 
                 <Scope path="address">
-                  <Input
+                  <InputMask
                     label="CEP"
                     name="zip_code"
+                    maskType="cep"
                     onBlur={handleLoadZipCode}
                     required
                   />
@@ -253,7 +281,12 @@ export default function Main() {
                     name="name"
                     required
                   />
-                  <Input label="Telefone" name="phone" required />
+                  <InputMask
+                    label="Telefone"
+                    name="phone"
+                    maskType="phone"
+                    required
+                  />
                   <Input label="E-mail" name="email" type="email" required />
                 </Scope>
               </div>
@@ -327,13 +360,13 @@ export default function Main() {
                               }}
                             />
 
-                            <Input
+                            <InputCurrency
                               label="Valor Unitário"
                               name="amount"
                               required
                               defaultValue={product.amount}
                               className="text-end"
-                              onChange={() => {
+                              onValueChange={() => {
                                 calculateTotalAmount(`products[${index}]`);
                               }}
                             />
@@ -425,6 +458,38 @@ export default function Main() {
           </fieldset>
         </Form>
       </main>
+
+      <Modal
+        isOpen={modalIsOpen}
+        style={{
+          content: {
+            width: "100%",
+            maxWidth: 720,
+            height: "100%",
+            maxHeight: 480,
+          },
+          overlay: {
+            width: "100%",
+            height: "100%",
+          },
+        }}
+      >
+        <div className="bg-stone-800 p-4 rounded-lg flex flex-col items-center h-full">
+          <Lottie
+            options={{
+              animationData: uploadAnimation,
+              loop: true,
+              autoplay: true,
+              rendererSettings: {
+                preserveAspectRatio: "xMidYMid slice",
+              },
+            }}
+            isClickToPauseDisabled
+          />
+
+          <h2 className="text-2xl">Enviando os dados...</h2>
+        </div>
+      </Modal>
     </div>
   );
 }

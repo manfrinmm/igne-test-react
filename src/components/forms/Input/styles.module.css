@@ -1,0 +1,15 @@
+.container {
+  @apply flex flex-col w-full;
+}
+
+.label {
+  @apply text-sm;
+}
+
+.input {
+  @apply w-full mt-1 border-solid border rounded p-1;
+}
+
+.error {
+  @apply text-red-900 font-bold;
+}

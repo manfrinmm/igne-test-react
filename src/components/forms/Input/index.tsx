@@ -3,6 +3,8 @@ import { InputHTMLAttributes, useEffect, useRef } from "react";
 import { useField } from "@unform/core";
 import { overrideTailwindClasses } from "tailwind-override";
 
+import styles from "./styles.module.css";
+
 interface IInputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   label: string;
@@ -27,10 +29,10 @@ export default function Input({
   return (
     <div
       className={overrideTailwindClasses(
-        `flex flex-col w-full ${containerClass}`,
+        `${styles.container} ${containerClass}`,
       )}
     >
-      <label className="text-sm" htmlFor={name}>
+      <label className={styles.label} htmlFor={name}>
         {label}
       </label>
 
@@ -41,13 +43,11 @@ export default function Input({
         defaultValue={defaultValue}
         type="text"
         autoComplete="off"
-        className={overrideTailwindClasses(
-          `w-full mt-1 border-solid border rounded p-1 ${className}`,
-        )}
+        className={overrideTailwindClasses(`${styles.input} ${className}`)}
         {...rest}
       />
 
-      {error && <span className="text-red-900 font-bold">{error}</span>}
+      {error && <span className={styles.error}>{error}</span>}
     </div>
   );
 }

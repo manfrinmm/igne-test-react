@@ -10,9 +10,15 @@ This project was based on [layout](./docs/layout.pdf) created by [Igne](https://
 
 # 🚀 Technologies used
 
-<!-- - [HTML](https://html.com/)
-- [Style Guide Fluig](https://style.fluig.com/)
-- [Jquery](https://jquery.com/) -->
+- [Vite](https://vitejs.dev/)
+- [TailwindCss](https://tailwindcss.com/)
+- [Eslint](https://eslint.org/)
+- [Prettier](https://prettier.io/)
+
+# How to run
+
+- Install dependencies (yarn or npm)
+- Run `yarn dev` to view project
 
 ---
 
